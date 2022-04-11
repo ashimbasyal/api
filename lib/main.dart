@@ -37,7 +37,7 @@ class _PageState extends State<Page> {
     var jsonData = jsonDecode(response.body);
     _items = jsonData["value"];
     print(_items);
-    return response;
+    return _items;
   }
 
   @override

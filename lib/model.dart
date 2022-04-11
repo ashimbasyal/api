@@ -6,20 +6,20 @@ String imageToJson(Image data) => json.encode(data.toJson());
 
 class Image {
     Image({
-        this.odataContext,
+        this.picture,
         this.value,
     });
 
-    String odataContext;
+    String picture;
     String value;
 
     factory Image.fromJson(Map<String, dynamic> json) => Image(
-        odataContext: json["@odata.context"],
+        picture: json["@picture.context"],
         value: json["value"],
     );
 
     Map<String, dynamic> toJson() => {
-        "@odata.context": odataContext,
+        "@odata.context": picture,
         "value": value,
     };
 }

@@ -30,15 +30,15 @@ class _PageState extends State<Page> {
     'https://cdn.elearningindustry.com/wp-content/uploads/2016/05/top-10-books-every-college-student-read-1024x640.jpeg',
     'https://images-cdn.reedsy.com/discovery/post/109/featured_image/large_aa7b8fcc4ee3a86626aca3157bbd8d697c38429a.jpg'
   ];
-  List _items = [];
-  Future getpic() async {
-    var response =
-        await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
-    var jsonData = jsonDecode(response.body);
-    _items = jsonData["value"];
-    print(_items);
-    return _items;
-  }
+  // List _items = [];
+  // Future getpic() async {
+  //   var response =
+  //       await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
+  //   var jsonData = jsonDecode(response.body);
+  //   _items = jsonData["value"];
+  //   print(_items);
+  //   return _items;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +48,7 @@ class _PageState extends State<Page> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {
-              
-            },
+            onPressed: () {},
             icon: new Icon(
               Icons.shopping_cart,
               color: Colors.white,
@@ -117,7 +115,7 @@ Widget buildCard() => Container(
       children: [
         Expanded(
           child: FutureBuilder(
-              future: getpic(),
+              future: getBookData(),
               builder: (context, snapshot) {
                 if (snapshot.data == null) {
                   return Container(
@@ -128,7 +126,7 @@ Widget buildCard() => Container(
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, i) {
                         return Card(
-                          child: Image.network(''),
+                          child: Text(snapshot.data[i].Name),
                         );
                       });
                 }
@@ -137,4 +135,36 @@ Widget buildCard() => Container(
       ],
     ));
 
-getpic() {}
+// List _items = [];
+// Future getpic() async {
+//   var response =
+//       await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
+//   var jsonData = jsonDecode(response.body);
+//   _items = jsonData["value"];
+//   print(_items);
+//   return jsonData;
+// }
+
+getBookData() async {
+  var response =
+      await http.get(Uri.https('103.69.126.198:8080', 'odata/Product'));
+  var jsonData = jsonDecode(response.body);
+  List<Book> books = [];
+  books = jsonData["value"];
+  for (var u in jsonData) {
+    Book book = Book(
+      u['Name'],
+    );
+    books.add(book);
+  }
+  print(books.length);
+
+  return books;
+}
+
+class Book {
+  final String name;
+  Book(
+    this.name,
+  );
+}

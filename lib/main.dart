@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:get/get.dart';
+import 'package:api/details.dart';
+import 'package:api/model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,11 +15,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       home: Page(),
     );
   }
 }
+
+Future _items;
+var book = new List<Book>();
 
 class Page extends StatefulWidget {
   const Page({Key key}) : super(key: key);
@@ -30,15 +36,38 @@ class _PageState extends State<Page> {
     'https://cdn.elearningindustry.com/wp-content/uploads/2016/05/top-10-books-every-college-student-read-1024x640.jpeg',
     'https://images-cdn.reedsy.com/discovery/post/109/featured_image/large_aa7b8fcc4ee3a86626aca3157bbd8d697c38429a.jpg'
   ];
-  // List _items = [];
-  // Future getpic() async {
-  //   var response =
-  //       await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
-  //   var jsonData = jsonDecode(response.body);
-  //   _items = jsonData["value"];
-  //   print(_items);
-  //   return _items;
-  // }
+  var imagepath;
+
+  Future getpic() async {
+    var response =
+        await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
+    var jsonData = jsonDecode(response.body);
+
+    jsonData["value"].forEach((blogPost) async {
+      var model = Book();
+      model = Book.fromjson(blogPost);
+      if (imagepath == null) {
+        imagepath = await http.get(Uri.http(
+            '103.69.126.198:8080', 'odata/Product/GetImagePath/' + model.id));
+        print(imagepath);
+      }
+      var a = json.decode(imagepath.body);
+      model.imagePath = a["value"];
+      if (this.mounted) {
+        setState(() {
+          book.add(model);
+        });
+      }
+    });
+
+    return book;
+  }
+
+  @override
+  void initState() {
+    _items = getpic();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,17 +116,21 @@ class _PageState extends State<Page> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Padding(padding: EdgeInsets.all(10)),
-              Container(
-                height: 124,
-                child: ListView.separated(
-                  padding: EdgeInsets.all(10),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 5,
-                  separatorBuilder: (context, _) => SizedBox(
-                    width: 12,
+              Column(
+                children: [
+                  Container(
+                    height: 200,
+                    child: ListView.separated(
+                      padding: EdgeInsets.all(10),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 2,
+                      separatorBuilder: (context, i) => SizedBox(
+                        width: 12,
+                      ),
+                      itemBuilder: (context, i) => buildCard(),
+                    ),
                   ),
-                  itemBuilder: (context, index) => buildCard(),
-                ),
+                ],
               )
             ],
           ),
@@ -109,13 +142,11 @@ class _PageState extends State<Page> {
 
 Widget buildCard() => Container(
     width: 200,
-    height: 200,
-    color: Color.fromARGB(255, 255, 255, 255),
     child: Column(
       children: [
         Expanded(
           child: FutureBuilder(
-              future: getBookData(),
+              future: _items,
               builder: (context, snapshot) {
                 if (snapshot.data == null) {
                   return Container(
@@ -125,8 +156,23 @@ Widget buildCard() => Container(
                   return ListView.builder(
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, i) {
-                        return Card(
-                          child: Text(snapshot.data[i].Name),
+                        return Column(
+                          children: [
+                            Card(
+                              child: InkWell(
+                                child: Image.network(
+                                    'http://103.69.126.198:8080' +
+                                        snapshot.data[i].imagePath),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailsPage(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            //Text(snapshot.data[i].id),
+                          ],
                         );
                       });
                 }
@@ -134,37 +180,3 @@ Widget buildCard() => Container(
         )
       ],
     ));
-
-// List _items = [];
-// Future getpic() async {
-//   var response =
-//       await http.get(Uri.http('103.69.126.198:8080', 'odata/Product'));
-//   var jsonData = jsonDecode(response.body);
-//   _items = jsonData["value"];
-//   print(_items);
-//   return jsonData;
-// }
-
-getBookData() async {
-  var response =
-      await http.get(Uri.https('103.69.126.198:8080', 'odata/Product'));
-  var jsonData = jsonDecode(response.body);
-  List<Book> books = [];
-  books = jsonData["value"];
-  for (var u in jsonData) {
-    Book book = Book(
-      u['Name'],
-    );
-    books.add(book);
-  }
-  print(books.length);
-
-  return books;
-}
-
-class Book {
-  final String name;
-  Book(
-    this.name,
-  );
-}

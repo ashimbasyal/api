@@ -1,26 +1,20 @@
-import 'dart:convert';
+ class Book{
+String id;
+String name;
+String imagePath;
+String filePath;
+String writerName;
+String shortDescription;
+String price;
 
-Image imageFromJson(String str) => Image.fromJson(json.decode(str));
+Book({this.id,this.name,this.imagePath,this.filePath,this.shortDescription,this.price,this.writerName});
+Book.fromjson(Map<String,dynamic> json)
+{
 
-String imageToJson(Image data) => json.encode(data.toJson());
+  id=json["Id"];
+  name=json['Name']??' ';
+shortDescription=json['ShortDescription'];
 
-class Image {
-    Image({
-        this.picture,
-        this.value,
-    });
-
-    String picture;
-    String value;
-
-    factory Image.fromJson(Map<String, dynamic> json) => Image(
-        picture: json["@picture.context"],
-        value: json["value"],
-    );
-
-    Map<String, dynamic> toJson() => {
-        "@odata.context": picture,
-        "value": value,
-    };
+ 
 }
-
+}

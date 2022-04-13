@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:api/details.dart';
 import 'package:api/model.dart';
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future _items;
+Future booklist;
 var book = new List<Book>();
 
 class Page extends StatefulWidget {
@@ -53,6 +54,7 @@ class _PageState extends State<Page> {
       }
       var a = json.decode(imagepath.body);
       model.imagePath = a["value"];
+      print(model.imagePath);
       if (this.mounted) {
         setState(() {
           book.add(model);
@@ -65,7 +67,7 @@ class _PageState extends State<Page> {
 
   @override
   void initState() {
-    _items = getpic();
+    booklist = getpic();
     super.initState();
   }
 
@@ -120,14 +122,18 @@ class _PageState extends State<Page> {
                 children: [
                   Container(
                     height: 200,
+                    width: 500,
                     child: ListView.separated(
                       padding: EdgeInsets.all(10),
                       scrollDirection: Axis.horizontal,
-                      itemCount: 2,
+
+                      itemCount: 1,
                       separatorBuilder: (context, i) => SizedBox(
                         width: 12,
                       ),
+
                       itemBuilder: (context, i) => buildCard(),
+
                     ),
                   ),
                 ],
@@ -140,13 +146,13 @@ class _PageState extends State<Page> {
   }
 }
 
-Widget buildCard() => Container(
-    width: 200,
+Widget buildCard({ Book item}) => Container(
+                        width: 600,
     child: Column(
       children: [
         Expanded(
           child: FutureBuilder(
-              future: _items,
+              future: booklist,
               builder: (context, snapshot) {
                 if (snapshot.data == null) {
                   return Container(
@@ -154,25 +160,33 @@ Widget buildCard() => Container(
                   );
                 } else {
                   return ListView.builder(
+                    scrollDirection: Axis.horizontal,
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, i) {
-                        return Column(
-                          children: [
-                            Card(
+                        return Card(
                               child: InkWell(
                                 child: Image.network(
                                     'http://103.69.126.198:8080' +
                                         snapshot.data[i].imagePath),
+
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => DetailsPage(),
+                                    builder: (context) => DetailsPage(
+                                      book:  'http://103.69.126.198:8080' +
+                                          snapshot.data[i].imagePath,
+
+                                      name: snapshot.data[i].name,
+                                      id: snapshot.data[i].id,
+
+                                 ),
                                   ),
                                 ),
                               ),
-                            ),
+
+
                             //Text(snapshot.data[i].id),
-                          ],
+
                         );
                       });
                 }
